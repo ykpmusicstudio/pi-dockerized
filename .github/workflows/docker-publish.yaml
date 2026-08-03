@@ -18,8 +18,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: {% raw %}${{ github.actor }}{% endraw %}
-          password: {% raw %}${{ secrets.potainer }}{% endraw %}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Docker image
         run: |
           docker build . --tag ghcr.io/{{ full_repo_name | lower }}/mypiagent:latest
