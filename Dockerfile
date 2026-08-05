@@ -17,6 +17,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
  && rm -rf /var/lib/apt/lists/*
 
+# volumes are :
+# - config: global pi config folder
+# - bun: static bun storage
+# - app: current workspace
+
 # Create a non-root user
 RUN if id ubuntu &>/dev/null; then \
        echo "user ubuntu already exists"; \
@@ -27,14 +32,12 @@ RUN if id ubuntu &>/dev/null; then \
 RUN echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ubuntu \
     && chmod 0440 /etc/sudoers.d/ubuntu
 
-# create /app folder 
-RUN mkdir /app && chown ubuntu:ubuntu /app -R
+# create /app folder for future overlay
+RUN mkdir /app
 # add configuration mountpoint that will contain .pi system-wide folder
-RUN mkdir -p /config/.pi && chown ubuntu:ubuntu /config/.pi -R
-RUN mkdir -p /config/.bun && chown ubuntu:ubuntu /config/.bun -R
+RUN mkdir -p /config/.pi
+RUN mkdir -p /config/.bun
 
-
-USER ubuntu 
 WORKDIR /app
 
 # Prepare SSH configuration
@@ -44,7 +47,7 @@ RUN mkdir -p $HOME/.ssh \
 # Preload GitHub host keys (non-interactive Git usage)
 RUN ssh-keyscan -T 5 github.com 2>/dev/null >> $HOME/.ssh/known_hosts || true
 
-ENV HOME=/home/ubuntu
+ENV HOME=/root
 # configure tmux
 COPY --chown=ubuntu:ubuntu .tmux.conf $HOME/.tmux.conf
 ADD --chown=ubuntu:ubuntu .tmux/ $HOME/.tmux
@@ -75,5 +78,6 @@ RUN chmod u+x $HOME/.local/bin/npm
 # Install Pi coding agent
 RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scripts @earendil-works/pi-coding-agent"
 # Replace the pi exec with bun statup script
-RUN echo "#!/bin/bash\nbunx --bun pi \"\$@\"" > $HOME/.local/bin/bpi
-RUN chmod u+x $HOME/.local/bin/bpi
+RUN mv $HOME/.bun/bin/pi $HOME/.bun/pi.ori
+RUN echo "#!/bin/bash\nbunx --bun pi.ori \"\$@\"" > $HOME/.local/bin/pi
+RUN chmod u+x $HOME/.local/bin/pi
