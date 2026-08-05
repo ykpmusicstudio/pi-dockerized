@@ -21,22 +21,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # - config: global pi config folder
 # - bun: static bun storage
 # - app: current workspace
-
-# Create a non-root user
-RUN if id ubuntu &>/dev/null; then \
-       echo "user ubuntu already exists"; \
-    else \
-       useradd -m -s /bin/bash ubuntu; \
-    fi
-#RUN useradd -m -s /bin/bash ubuntu
-RUN echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ubuntu \
-    && chmod 0440 /etc/sudoers.d/ubuntu
+VOLUME ["/pi-config"]
+VOLUME ["/bun-config"]
+VOLUME ["/app"]
 
 # create /app folder for future overlay
-RUN mkdir /app
+#RUN mkdir /app
 # add configuration mountpoint that will contain .pi system-wide folder
-RUN mkdir -p /config/.pi
-RUN mkdir -p /config/.bun
+#RUN mkdir -p /config/.pi
+#RUN mkdir -p /config/.bun
 
 WORKDIR /app
 
@@ -57,10 +50,10 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 
 # add .pi folder as a link to /config
-RUN ln -s /config/.pi $HOME/.pi
+RUN ln -s /pi-config $HOME/.pi
 # create bun install target
 RUN mkdir -p $HOME/.bun
-RUN ln -s /config/.bun $HOME/.bun/install
+RUN ln -s /bun-config $HOME/.bun/install
 
 # Install bun
 RUN curl -fsSL https://bun.com/install | bash
@@ -81,3 +74,8 @@ RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scrip
 RUN mv $HOME/.bun/bin/pi $HOME/.bun/pi.ori
 RUN echo "#!/bin/bash\nbunx --bun pi.ori \"\$@\"" > $HOME/.local/bin/pi
 RUN chmod u+x $HOME/.local/bin/pi
+# Install pi-web
+
+
+# entry point is pi-web -p 8080
+CMD ["pi-web","-p 8080"]
