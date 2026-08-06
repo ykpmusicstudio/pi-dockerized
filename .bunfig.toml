@@ -1,0 +1,3 @@
+[install]
+globalBinDir = "/pi-extensions/.bun/bin"
+globalDir = "/pi-extensions/.bun/install"
