@@ -1,12 +1,13 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# /usr/bin/env bash
 #
 # pi-config setup / launch script
 #
 # Specs:
 # - tests if /pi-config, /pi-extensions and /app folder exists, errors out if not
-# - tests if /pi-config/.pi/agent exists, if not copy /root/.pi to /pi-config/.pi and warn about pi-config initialization
-# - teste if /pi-extensions/.bun exists, if not  copy /root/.bun to /pi-extensions/.bun and warn about pi-extensions initialization
-# - make sure that /pi-extensions/.bun/bin and /root/.local/bin are present or added to PATH
+# - tests if /pi-config/.pi/agent exists, if not copy $HOME/.pi to /pi-config/.pi and warn about pi-config initialization
+# - teste if /pi-extensions/.bun exists, if not  copy $HOME/.bun to /pi-extensions/.bun and warn about pi-extensions initialization
+# - make sure that /pi-extensions/.bun/bin and $HOME/.local/bin are present or added to PATH
 # - tests if /app/.bun and /app/.pi/agent folders exists, creates them if not
 # - if all is ok, start pi-web agent with -p 8080 -H 0.0.0.0 --no-open
 set -euo pipefail
@@ -47,33 +48,33 @@ if [ "$MISSING" -ne 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 2) Test if /pi-config/.pi/agent exists; if not copy /root/.pi to
+# 2) Test if /pi-config/.pi/agent exists; if not copy $HOME/.pi to
 #    /pi-config/.pi and warn about pi-config initialization
 # ---------------------------------------------------------------------------
 if [ ! -d /pi-config/.pi/agent ]; then
-    if [ -d /root/.pi ]; then
-        cp -a /root/.pi /pi-config/.pi
+    if [ -d $HOME/.pi ]; then
+        cp -a $HOME/.pi /pi-config/.pi
     else
         mkdir -p /pi-config/.pi/agent
     fi
-    warn "pi-config initialization: copied '/root/.pi' to '/pi-config/.pi'"
+    warn "pi-config initialization: copied '$HOME/.pi' to '/pi-config/.pi'"
 fi
 
 # ---------------------------------------------------------------------------
-# 3) Test if /pi-extensions/.bun exists; if not copy /root/.bun to
+# 3) Test if /pi-extensions/.bun exists; if not copy $HOME/.bun to
 #    /pi-extensions/.bun and warn about pi-extensions initialization
 # ---------------------------------------------------------------------------
 if [ ! -d /pi-extensions/.bun ]; then
-    if [ -d /root/.bun ]; then
-        cp -a /root/.bun /pi-extensions/.bun
+    if [ -d $HOME/.bun ]; then
+        cp -a $HOME/.bun /pi-extensions/.bun
     else
         mkdir -p /pi-extensions/.bun
     fi
-    warn "pi-extensions initialization: copied '/root/.bun' to '/pi-extensions/.bun'"
+    warn "pi-extensions initialization: copied '$HOME/.bun' to '/pi-extensions/.bun'"
 fi
 
 # ---------------------------------------------------------------------------
-# 4) Make sure /pi-extensions/.bun/bin and /root/.local/bin are present
+# 4) Make sure /pi-extensions/.bun/bin and $HOME/.local/bin are present
 #    or added to PATH
 # ---------------------------------------------------------------------------
 add_to_path() {
@@ -89,7 +90,7 @@ add_to_path() {
 }
 
 add_to_path /pi-extensions/.bun/bin
-add_to_path /root/.local/bin
+add_to_path $HOME/.local/bin
 
 # ---------------------------------------------------------------------------
 # 5) Test if /app/.bun and /app/.pi/agent exist; create them if not
@@ -102,4 +103,5 @@ info "Ensured /app/.bun and /app/.pi/agent exist."
 # 6) If all is ok, start pi-web agent with -p 8080 -H 0.0.0.0 --no-open
 # ---------------------------------------------------------------------------
 info "All checks passed. Starting pi-web agent..."
-exec pi-web -H 0.0.0.0 -p 8080 --no-open
+info "Running as $(whoami)"
+bun --bun run pi-web -H 0.0.0.0 -p 8080 --no-open

@@ -1,0 +1,53 @@
+services:
+  pi-dockerized:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: localhost/pi-dockerized:latest
+    container_name: pi_dockerized
+    ports:
+      - "30141:80"
+
+    tty: true
+    stdin_open: true
+
+    environment:
+      - TEST=""
+
+    volumes:
+      - app:/app
+      - pi_config:/pi-config
+      - pi_extensions:/pi-extensions
+
+    user: "${UID:-1000}:${GID:-1000}"
+
+    networks:
+      - pi-network
+
+    restart: "no"
+
+volumes:
+  pi_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/.tests/pi-config
+
+  pi_extensions:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/.tests/pi-extensions
+
+  app:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/.tests/pi-extensions
+
+networks:
+    pi-network:
+      driver: bridge
