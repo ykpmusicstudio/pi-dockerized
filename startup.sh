@@ -1,5 +1,5 @@
-#!/bin/bash
-# /usr/bin/env bash
+#!/usr/bin/env bash
+# /bin/bash
 #
 # pi-config setup / launch script
 #
@@ -11,6 +11,8 @@
 # - tests if /app/.bun and /app/.pi/agent folders exists, creates them if not
 # - if all is ok, start pi-web agent with -p 8080 -H 0.0.0.0 --no-open
 set -euo pipefail
+
+source $HOME/.bashrc
 
 # ---------------------------------------------------------------------------
 # Set up some colors for warnings / errors (only if stdout is a TTY)
@@ -90,6 +92,7 @@ add_to_path() {
 }
 
 add_to_path /pi-extensions/.bun/bin
+add_to_path $HOME/.bun/bin
 add_to_path $HOME/.local/bin
 
 # ---------------------------------------------------------------------------
@@ -104,4 +107,6 @@ info "Ensured /app/.bun and /app/.pi/agent exist."
 # ---------------------------------------------------------------------------
 info "All checks passed. Starting pi-web agent..."
 info "Running as $(whoami)"
+info "bun is $(which bun)"
+info "PATH is $PATH"
 bun --bun run pi-web -H 0.0.0.0 -p 8080 --no-open

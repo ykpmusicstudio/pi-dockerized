@@ -1,11 +1,12 @@
-#FROM ubuntu:latest as base
-FROM debian:stable-slim AS base
+FROM ubuntu:latest AS base
+#FROM debian:stable-slim AS base
 
 # debian created with root but executed with local user !!
 # TODO Fix the user issue
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+USER root
 # Install required system tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fd-find \
@@ -39,14 +40,14 @@ RUN mkdir -p /pi-extensions
 RUN mkdir -p /app
 
 # give ubuntu user rw access to volumes
-#RUN chown ubuntu:ubuntu /pi-config && chown ubuntu:ubuntu /pi-extensions && chown ubuntu:ubuntu /app
+RUN chown ubuntu:ubuntu /pi-config && chown ubuntu:ubuntu /pi-extensions && chown ubuntu:ubuntu /app
 
 FROM base AS build1
 
-#ENV HOME=/home/ubuntu
-ENV HOME=/root
+ENV HOME=/home/ubuntu
+#ENV HOME=/root
 
-#USER ubuntu
+USER ubuntu
 
 # Prepare SSH configuration
 RUN mkdir -p $HOME/.ssh \
@@ -77,11 +78,13 @@ RUN curl -fsSL https://bun.com/install | bash
 
 # configure fake npm as an alias to bun
 RUN mkdir -p ~/.local/bin
-#COPY --chmod=755 --chown=ubuntu:ubuntu fake_npm $HOME/.local/bin/npm
-COPY --chmod=755 fake_npm $HOME/.local/bin/npm
+COPY --chmod=755 --chown=ubuntu:ubuntu fake_npm $HOME/.local/bin/npm
+#COPY --chmod=755 fake_npm $HOME/.local/bin/npm
 RUN chmod u+x $HOME/.local/bin/npm
 
 FROM build1 AS final
+
+USER ubuntu
 
 WORKDIR /app
 
@@ -104,12 +107,12 @@ RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && npm install -g
 RUN echo 'export PATH=$PATH:$HOME/.local/.bin' >> $HOME/.bashrc
 
 # Add entrypoint script
-#COPY --chmod=555 --chown=ubuntu:ubuntu startup.sh $HOME/startup.sh
-COPY --chmod=755 startup.sh /
+COPY --chmod=555 --chown=ubuntu:ubuntu startup.sh $HOME/startup.sh
+#COPY --chmod=755 startup.sh /
 
 # Expose port 8080
 #EXPOSE 8080
 
 # entry point is pi-web -p 8080
-ENTRYPOINT ["/bin/bash","-c","/startup.sh"]
+ENTRYPOINT ["/bin/bash","-c","$HOME/startup.sh"]
 

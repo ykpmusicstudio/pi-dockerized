@@ -1,12 +1,12 @@
 services:
-  pi-dockerized:
+  mypiagent:
     build:
       context: .
       dockerfile: Dockerfile
-    image: localhost/pi-dockerized:latest
-    container_name: pi_dockerized
+    image: localhost/pi-dockerized/mypiagent:latest
+    container_name: mypiagent
     ports:
-      - "30141:80"
+      - "8080:8080"
 
     tty: true
     stdin_open: true
