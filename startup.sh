@@ -103,10 +103,10 @@ mkdir -p /app/.pi/agent
 info "Ensured /app/.bun and /app/.pi/agent exist."
 
 # ---------------------------------------------------------------------------
-# 6) If all is ok, start pi-web agent with -p $HTTP_PORT -H 0.0.0.0 --no-open
+# 6) If all is ok, start pi-web agent with -p $HTTP_PORT -H $IP_ADDR --no-open
 # ---------------------------------------------------------------------------
 info "All checks passed. Starting pi-web agent..."
 info "Running as $(whoami)"
 info "bun is $(which bun)"
 info "PATH is $PATH"
-bun --bun run pi-web -H 0.0.0.0 -p $HTTP_PORT --no-open
+bun --bun run pi-web -H $IP_ADDR -p $HTTP_PORT --no-open
