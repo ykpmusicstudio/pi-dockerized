@@ -12,7 +12,7 @@ services:
     stdin_open: true
 
     environment:
-      - HTTP_PORT = 44135
+      - HTTP_PORT=44135
       - TEST=""
 
     volumes:
