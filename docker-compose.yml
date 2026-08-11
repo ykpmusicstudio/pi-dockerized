@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: localhost/pi-dockerized/mypiagent:latest
+    image: localhost/ykpmusicstudio/pi-dockerized:latest
     container_name: mypiagent
     ports:
       - "8080:8080"
@@ -12,6 +12,7 @@ services:
     stdin_open: true
 
     environment:
+      - HTTP_PORT = 44135
       - TEST=""
 
     volumes:
@@ -46,7 +47,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/.tests/pi-extensions
+      device: ${PWD}/.tests/app
 
 networks:
     pi-network:
