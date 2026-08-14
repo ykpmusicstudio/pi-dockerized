@@ -36,6 +36,7 @@ info()  { printf "${GREEN}[INFO]${NC} %s\n" "$*"; }
 # ---------------------------------------------------------------------------
 # 1) Test that /pi-config, /pi-extensions and /app exist -> error out if not
 # ---------------------------------------------------------------------------
+info "Required dirs checks..."
 REQUIRED_DIRS=(/pi-config /pi-extensions /app)
 MISSING=0
 for dir in "${REQUIRED_DIRS[@]}"; do
@@ -53,13 +54,15 @@ fi
 # 2) Test if /pi-config/.pi/agent exists; if not copy $HOME/.pi to
 #    /pi-config/.pi and warn about pi-config initialization
 # ---------------------------------------------------------------------------
+info "Checking pi-config initialization state"
 if [ ! -d /pi-config/.pi/agent ]; then
     if [ -d $HOME/.pi ]; then
         cp -a $HOME/.pi /pi-config/.pi
+        warn "pi-config initialization: copied '$HOME/.pi' to '/pi-config/.pi'"
     else
         mkdir -p /pi-config/.pi/agent
+        error "No '$HOME'/.pi folder found, creating empty config"
     fi
-    warn "pi-config initialization: copied '$HOME/.pi' to '/pi-config/.pi'"
 fi
 
 # ---------------------------------------------------------------------------
@@ -69,10 +72,11 @@ fi
 if [ ! -d /pi-extensions/.bun ]; then
     if [ -d $HOME/.bun ]; then
         cp -a $HOME/.bun /pi-extensions/.bun
+        warn "pi-extensions initialization: copied '$HOME/.bun' to '/pi-extensions/.bun'"
     else
         mkdir -p /pi-extensions/.bun
+        error "No '$HOME'/.bun folder found, creating empty config"
     fi
-    warn "pi-extensions initialization: copied '$HOME/.bun' to '/pi-extensions/.bun'"
 fi
 
 # ---------------------------------------------------------------------------
@@ -101,6 +105,44 @@ add_to_path $HOME/.local/bin
 mkdir -p /app/.bun
 mkdir -p /app/.pi/agent
 info "Ensured /app/.bun and /app/.pi/agent exist."
+mkdir -p /app/.pi-web
+info "Ensured /app/.pi-web exist."
+
+# ---------------------------------------------------------------------------
+# 5.1) Test if /app/.pi-web/config.json is present. copy it not
+# ---------------------------------------------------------------------------
+if [ ! -f /pi-config/.pi-web/config.json ]; then
+    if [ -d $HOME/.bun ]; then
+        cp $HOME/config.json /pi-config/.pi-web/config.json
+    else
+        touch /pi-config/.pi-web/config.json
+    fi
+    warn "pi-web initialization: copied '$HOME/.pi-web/config.json' to '/pi-config/.pi-web'"
+fi
+
+# ---------------------------------------------------------------------------
+# 5.2) Env var checks: PI_WEB_ALLOWED_HOSTS, PI_CODING_AGENT_DIR, PI_WEB_CONFIG
+#    - show value:   info
+#    - set but empty: warning
+#    - unset/missing: error
+# ---------------------------------------------------------------------------
+ENV_VARS=(PI_WEB_ALLOWED_HOSTS PI_CODING_AGENT_DIR PI_WEB_CONFIG)
+ENV_FAILED=0
+for var in "${ENV_VARS[@]}"; do
+    if [[ ! -v "$var" ]]; then
+        error "Environment variable '$var' is not set (missing)."
+        ENV_FAILED=1
+    elif [[ -z "${!var}" ]]; then
+        warn "Environment variable '$var' is set but empty."
+    else
+        info "Environment variable '$var' = '${!var}'"
+    fi
+done
+
+if [ "$ENV_FAILED" -ne 0 ]; then
+    error "One or more required environment variables are missing. Aborting."
+    exit 1
+fi
 
 # ---------------------------------------------------------------------------
 # 6) If all is ok, start pi-web agent with -p $HTTP_PORT -H $IP_ADDR --no-open

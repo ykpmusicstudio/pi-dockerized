@@ -106,6 +106,9 @@ RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && npm install -g
 # Add $HOME/.local/bin to PATH
 RUN echo 'export PATH=$PATH:$HOME/.local/.bin' >> $HOME/.bashrc
 
+# Add config.json for pi-web
+COPY --chmod=555 --chown=ubuntu:ubuntu config.json $HOME/config.json
+
 # Add entrypoint script
 COPY --chmod=555 --chown=ubuntu:ubuntu startup.sh $HOME/startup.sh
 #COPY --chmod=755 startup.sh /
