@@ -86,6 +86,7 @@ fi
 add_to_path() {
     local dir="$1"
     if [ -d "$dir" ]; then
+        info "adding $dir to PATH"
         # Remove any existing entry to avoid duplicates, then prepend
         PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -Fxv "$dir" | paste -sd: -)
         PATH="$dir:$PATH"

@@ -104,7 +104,7 @@ RUN chmod u+x $HOME/.local/bin/pi
 RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && npm install -g @agegr/pi-web"
 
 # Add $HOME/.local/bin to PATH
-RUN echo 'export PATH=$PATH:$HOME/.local/.bin' >> $HOME/.bashrc
+RUN echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
 
 # Add config.json for pi-web
 COPY --chmod=555 --chown=ubuntu:ubuntu config.json $HOME/config.json
