@@ -143,8 +143,8 @@ info "Ensured $REPO_VOL/.pi-web exist."
 # 5.1) Test if $REPO_VOL/.pi-web/config.json is present. copy it not
 # ---------------------------------------------------------------------------
 if [ ! -f $PICONFIG_VOL/.pi-web/config.json ]; then
-    if [ -d $HOME/config.json ]; then
-        mkdir -p $PICONFIG_VOL/.pi-web
+    mkdir -p $PICONFIG_VOL/.pi-web
+    if [ -f $HOME/config.json ]; then
         cp $HOME/config.json $PICONFIG_VOL/.pi-web/config.json
         warn "pi-web initialization: copied '$HOME/.pi-web/config.json' to '$PICONFIG_VOL/.pi-web'"
     else
