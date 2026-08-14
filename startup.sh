@@ -58,7 +58,9 @@ info "Checking pi-config initialization state"
 if [ ! -d /pi-config/.pi/agent ]; then
     if [ -d $HOME/.pi ]; then
         cp -a $HOME/.pi /pi-config/.pi
-        warn "pi-config initialization: copied '$HOME/.pi' to '/pi-config/.pi'"
+        mv $HOME/.pi $HOME/.pi.ori
+        ln -s /pi-config/.pi $HOME/.pi
+        warn "pi-config initialization: copied '$HOME/.pi' and linked to '/pi-config/.pi'"
     else
         mkdir -p /pi-config/.pi/agent
         error "No '$HOME'/.pi folder found, creating empty config"
@@ -72,7 +74,9 @@ fi
 if [ ! -d /pi-extensions/.bun ]; then
     if [ -d $HOME/.bun ]; then
         cp -a $HOME/.bun /pi-extensions/.bun
-        warn "pi-extensions initialization: copied '$HOME/.bun' to '/pi-extensions/.bun'"
+        mv $HOME/.bun $HOME/.bun.ori
+        ln -s /pi-extensions/.bun $HOME/.bun
+        warn "pi-extensions initialization: copied '$HOME/.bun' and linked to '/pi-extensions/.bun'"
     else
         mkdir -p /pi-extensions/.bun
         error "No '$HOME'/.bun folder found, creating empty config"
@@ -96,7 +100,6 @@ add_to_path() {
     fi
 }
 
-add_to_path /pi-extensions/.bun/bin
 add_to_path $HOME/.bun/bin
 add_to_path $HOME/.local/bin
 
@@ -115,10 +118,11 @@ info "Ensured /app/.pi-web exist."
 if [ ! -f /pi-config/.pi-web/config.json ]; then
     if [ -d $HOME/.bun ]; then
         cp $HOME/config.json /pi-config/.pi-web/config.json
+        warn "pi-web initialization: copied '$HOME/.pi-web/config.json' to '/pi-config/.pi-web'"
     else
+        error "creating empty config.json in /pi-config/.pi-web"
         touch /pi-config/.pi-web/config.json
     fi
-    warn "pi-web initialization: copied '$HOME/.pi-web/config.json' to '/pi-config/.pi-web'"
 fi
 
 # ---------------------------------------------------------------------------
@@ -127,7 +131,7 @@ fi
 #    - set but empty: warning
 #    - unset/missing: error
 # ---------------------------------------------------------------------------
-ENV_VARS=(PI_WEB_ALLOWED_HOSTS PI_CODING_AGENT_DIR PI_WEB_CONFIG)
+ENV_VARS=(PI_WEB_ALLOWED_HOSTS PI_CODING_AGENT_DIR PI_WEB_CONFIG REPO_ROOT)
 ENV_FAILED=0
 for var in "${ENV_VARS[@]}"; do
     if [[ ! -v "$var" ]]; then
@@ -152,4 +156,6 @@ info "All checks passed. Starting pi-web agent..."
 info "Running as $(whoami)"
 info "bun is $(which bun)"
 info "PATH is $PATH"
+info "cd'ing to $REPO_ROOT and launch pi-web"
+cd $REPO_ROOT
 bun --bun run pi-web -H $IP_ADDR -p $HTTP_PORT --no-open

@@ -13,10 +13,10 @@ services:
 
     environment:
       - HTTP_PORT=44135
-      - PI_WEB_CONFIG=/pi-config/.pi-web
       - IP_ADDR=0.0.0.0
       - PI_WEB_CONFIG=/pi-config/.pi-web
-      - PI_CODING_AGENT_DIR=/app
+      - PI_CODING_AGENT_DIR=/pi-config
+      - REPO_ROOT=/app
       - PI_WEB_ALLOWED_HOSTS=localhost
 
     volumes:
