@@ -1,0 +1,18 @@
+{
+  "pathAccess": {
+    "allowedPaths": ["/app"]
+  },
+  "uploads": {
+    "defaultFolder": "/pi-config/.pi-web/uploads"
+  },
+  "maxUploadBytes": 67108864,
+  "spawnSessions": true,
+  "subsessions": true,
+  "askUser": true,
+  "extensionDialogsTimeoutMs": 300000,
+  "plugins": {
+    "workspace-tasks": { "enabled": true },
+    "updates": { "enabled": true },
+    "info": { "enabled": false }
+  },
+}
