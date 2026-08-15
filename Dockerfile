@@ -91,6 +91,7 @@ WORKDIR /app
 #RUN bash -c "source $HOME/.nvm/nvm.sh && nvm install 24"
 
 # Install Pi coding agent
+COPY --chmod=555 --chown=ubuntu:ubuntu settings.json $HOME/.pi/agent/settings.json
 RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.1"
 # Replace the pi exec with bun statup script
 
@@ -111,7 +112,8 @@ RUN chmod u+x $HOME/.local/bin/pi
 RUN chmod u+x $HOME/.local/bin/pi-web
 
 # Test run pi
-RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && pi install git:github.com/edxeth/pi-tasks || :"
+#RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && pi install git:github.com/edxeth/pi-tasks || :"
+RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && pi update || :"
 
 # Add config.json for pi-web
 RUN mkdir $HOME/.pi-web.init

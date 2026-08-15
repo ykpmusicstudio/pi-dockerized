@@ -98,7 +98,7 @@ if [ -f $PICONFIG_VOL/.reinit ]; then
   rm -f $PICONFIG_VOL/.reinit
   rm -rf $PICONFIG_VOL/*
   if [ -d $HOME/.pi/agent ]; then
-      cp -a $HOME/.pi/agent $PICONFIG_VOL
+      cp -a $HOME/.pi/agent/* $PICONFIG_VOL/.
       warn ".. pi-config initialization: copied '$HOME/.pi' and linked to '$PICONFIG_VOL/.pi'"
   else
       error "** No '$HOME'/.pi.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
