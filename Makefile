@@ -20,10 +20,11 @@ TESTDIR := $(shell pwd)/.tests
 
 # Create local data directory for persistence if using bind mount strategy
 setup:
-	rm -rf $(TESTDIR)/*
+	#rm -rf $(TESTDIR)/*
 	mkdir -p ./.tests/pi-config
 	mkdir -p ./.tests/pi-extensions
 	mkdir -p ./.tests/app
+	touch ./.tests/pi-config/.reinit
 
 # Build the podman image locally from source/npm
 build:

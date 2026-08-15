@@ -46,17 +46,17 @@ ENV_VARS=(PI_WEB_ALLOWED_HOSTS PI_CODING_AGENT_DIR PI_WEB_CONFIG REPO_ROOT)
 ENV_FAILED=0
 for var in "${ENV_VARS[@]}"; do
     if [[ ! -v "$var" ]]; then
-        error "Environment variable '$var' is not set (missing)."
+        error "** Environment variable '$var' is not set (missing)."
         ENV_FAILED=1
     elif [[ -z "${!var}" ]]; then
-        warn "Environment variable '$var' is set but empty."
+        warn ".. Environment variable '$var' is set but empty."
     else
-        info "Environment variable '$var' = '${!var}'"
+        info "   Environment variable '$var' = '${!var}'"
     fi
 done
 
 if [ "$ENV_FAILED" -ne 0 ]; then
-    error "One or more required environment variables are missing. Aborting."
+    error "** One or more required environment variables are missing. Aborting."
     exit 1
 fi
 
@@ -68,7 +68,7 @@ REQUIRED_DIRS=($PICONFIG_VOL $PIEXT_VOL $REPO_ROOT ~/.pi.init ~/.pi-web.init ~/.
 MISSING=0
 for dir in "${REQUIRED_DIRS[@]}"; do
     if [ ! -d "$dir" ]; then
-        error "Required directory '$dir' does not exist."
+        error "** Required directory '$dir' does not exist."
         MISSING=1
     fi
 done
@@ -76,21 +76,22 @@ info "Required files checks..."
 REQUIRED_FILES=(~/.pi-web.init/config.json)
 for file in "${REQUIRED_FILES[@]}"; do
     if [ ! -f "$file" ]; then
-        error "Required file '$file' is missing."
+        error "** Required file '$file' is missing."
         MISSING=1
     fi
 done
 if [ "$MISSING" -ne 0 ]; then
-    error "One or more required files on directories are missing. Aborting."
+    error "** One or more required files on directories are missing. Aborting."
     exit 1
 fi
 
 # ---------------------------------------------------------------------------
-# 1.1) Reinit Run asked ?
+# 1.1) Reinit Run asked in $PICONFIG_VOL ?
 # ---------------------------------------------------------------------------
-DO_REINIT=${REINIT_VOL:-}
-if [ -z "$DO_REINIT" ]; then
-  warn "***REINIT_VOL is set*** $PICONFIG_VOL and $PIEXT_VOL will be reinitialized!"
+#DO_REINIT=${REINIT_VOL:-}
+if [ -f $PICONFIG_VOL/.reinit ]; then
+  warn "!!! .reinit file found in $PICONFIG_VOL !!! $PICONFIG_VOL and $PIEXT_VOL will be reinitialized!"
+  rm $PICONFIG_VOL/.reinit
   rm -rf $PICONFIG_VOL/.pi
   rm -rf $PIEXT_VOL/.bun
 fi
@@ -113,10 +114,9 @@ info "Checking $PICONFIG_VOL/.pi initialization state"
 if [ ! -d $PICONFIG_VOL/.pi/agent ]; then
     if [ -d $HOME/.pi.init ]; then
         cp -a $HOME/.pi.init $PICONFIG_VOL/.pi
-        ln -s $PICONFIG_VOL/.pi $HOME/.pi
-        warn "pi-config initialization: copied '$HOME/.pi' and linked to '$PICONFIG_VOL/.pi'"
+        warn ".. pi-config initialization: copied '$HOME/.pi' and linked to '$PICONFIG_VOL/.pi'"
     else
-        error "No '$HOME'/.pi.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
+        error "** No '$HOME'/.pi.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
         exit 1
     fi
 fi
@@ -129,9 +129,9 @@ if [ ! -f $PICONFIG_VOL/.pi-web/config.json ]; then
     mkdir -p $PICONFIG_VOL/.pi-web
     if [ -f $HOME/.pi-web.init/config.json ]; then
         cp $HOME/.pi-web.init/config.json $PICONFIG_VOL/.pi-web/config.json
-        warn "pi-web initialization: copied '$HOME/.pi-web/config.json' to '$PICONFIG_VOL/.pi-web'"
+        warn ".. pi-web initialization: copied '$HOME/.pi-web/config.json' to '$PICONFIG_VOL/.pi-web'"
     else
-        error "No '$HOME'/.pi-web.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
+        error "** No '$HOME'/.pi-web.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
         exit 1
     fi
 fi
@@ -144,12 +144,25 @@ info "Checking $PIEXT_VOL/.bun initialization state"
 if [ ! -d $PIEXT_VOL/.bun ]; then
     if [ -d $HOME/.bun.init ]; then
         cp -a $HOME/.bun.init $PIEXT_VOL/.bun
-        ln -s $PIEXT_VOL/.bun $HOME/.bun
-        warn "pi-extensions initialization: copied '$HOME/.bun' and linked to '$PIEXT_VOL/.bun'"
+        warn ".. pi-extensions initialization: copied '$HOME/.bun' and linked to '$PIEXT_VOL/.bun'"
     else
-        error "No '$HOME'/.bun.init folder found, cannot initialize $PIEXT_VOL volume. Aborting."
+        error "** No '$HOME'/.bun.init folder found, cannot initialize $PIEXT_VOL volume. Aborting."
         exit 1
     fi
+fi
+
+# ---------------------------------------------------------------------------
+# Add symlinks whenever needed
+# ---------------------------------------------------------------------------
+info "Checking $HOME/.bun simlink"
+if [ ! -d "$HOME/.bun" ]; then
+    warn ".. adding $HOME/.bun simlink to $PIEXT_VOL/.bun"
+    ln -s $PIEXT_VOL/.bun $HOME/.bun
+fi
+info "Checking $HOME/.pi simlink"
+if [ ! -d "$HOME/.pi" ]; then
+    warn ".. adding $HOME/.pi simlink to $PICONFIG_VOL/.pi"
+    ln -s $PICONFIG_VOL/.pi $HOME/.pi
 fi
 
 # ---------------------------------------------------------------------------
