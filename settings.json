@@ -1,0 +1,19 @@
+{
+  "lastChangelogVersion": "0.80.10",
+  "npmCommand": [
+    "bun"
+  ],
+  "packages": [
+    "git:github.com/kotarac/pi-fetch",
+    "git:github.com/edxeth/pi-tasks",
+    "git:github.com/edxeth/pi-subagents",
+    "git:github.com/eko24ive/pi-ask"
+  ],
+  "defaultProvider": "openrouter",
+  "defaultModel": "deepseek/deepseek-v4-flash",
+  "defaultThinkingLevel": "high",
+  "tasksMode": "open",
+  "hideThinkingBlock": false,
+  "enableInstallTelemetry": false,
+  "autocompleteMaxVisible": 20,
+}
