@@ -15,5 +15,5 @@
   "tasksMode": "open",
   "hideThinkingBlock": false,
   "enableInstallTelemetry": false,
-  "autocompleteMaxVisible": 20,
+  "autocompleteMaxVisible": 20
 }
