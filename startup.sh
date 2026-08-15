@@ -91,7 +91,7 @@ fi
 #DO_REINIT=${REINIT_VOL:-}
 if [ -f $PICONFIG_VOL/.reinit ]; then
   warn "!!! .reinit file found in $PICONFIG_VOL !!! $PICONFIG_VOL and $PIEXT_VOL will be reinitialized!"
-  rm $PICONFIG_VOL/.reinit
+  rm -f $PICONFIG_VOL/.reinit
   rm -rf $PICONFIG_VOL/.pi
   rm -rf $PIEXT_VOL/.bun
 fi
