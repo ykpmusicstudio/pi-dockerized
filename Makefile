@@ -27,6 +27,7 @@ setup:
 	mkdir -p ./.tests/pi-extensions
 	mkdir -p ./.tests/app
 	touch ./.tests/pi-config/.reinit
+	touch ./.tests/pi-extensions/.reinit
 
 # Build the podman image locally from source/npm
 build:

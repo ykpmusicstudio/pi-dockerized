@@ -89,11 +89,37 @@ fi
 # 1.1) Reinit Run asked in $PICONFIG_VOL ?
 # ---------------------------------------------------------------------------
 #DO_REINIT=${REINIT_VOL:-}
+# ---------------------------------------------------------------------------
+# 2) Test if $PICONFIG_VOL shall be reinit and warn about pi-config initialization
+# ---------------------------------------------------------------------------
+info "Checking $PICONFIG_VOL/.pi initialization state"
 if [ -f $PICONFIG_VOL/.reinit ]; then
-  warn "!!! .reinit file found in $PICONFIG_VOL !!! $PICONFIG_VOL and $PIEXT_VOL will be reinitialized!"
+  warn "!!! .reinit file found in $PICONFIG_VOL !!! $PICONFIG_VOL will be reinitialized!"
   rm -f $PICONFIG_VOL/.reinit
-  rm -rf $PICONFIG_VOL/.pi
+  rm -rf $PICONFIG_VOL/*
+  if [ -d $HOME/.pi/agent ]; then
+      cp -a $HOME/.pi/agent $PICONFIG_VOL
+      warn ".. pi-config initialization: copied '$HOME/.pi' and linked to '$PICONFIG_VOL/.pi'"
+  else
+      error "** No '$HOME'/.pi.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
+      exit 1
+  fi
+fi
+# ---------------------------------------------------------------------------
+# 3) Test if $PIEXT_VOL shall be reinit warn about pi-extensions initialization
+# ---------------------------------------------------------------------------
+info "Checking $PIEXT_VOL/.bun initialization state"
+if [ -f $PIEXT_VOL/.reinit ]; then
+  warn "!!! .reinit file found in $PIEXT_VOL!!! $PIEXT_VOL will be reinitialized!"
+  rm -f $PIEXT_VOL/.reinit
   rm -rf $PIEXT_VOL/.bun
+  if [ -d $HOME/.bun ]; then
+      cp -a $HOME/.bun $PIEXT_VOL
+      warn ".. pi-extensions initialization: copied '$HOME/.bun' and linked to '$PIEXT_VOL'"
+  else
+      error "** No '$HOME'/.bun.init folder found, cannot initialize $PIEXT_VOL volume. Aborting."
+      exit 1
+  fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -107,21 +133,6 @@ fi
 #info "Ensured $REPO_ROOT/.pi-web exist."
 
 # ---------------------------------------------------------------------------
-# 2) Test if $PICONFIG_VOL has sessins if not copy $HOME/.pi/agent to
-#    $PICONFIG_VOL and warn about pi-config initialization
-# ---------------------------------------------------------------------------
-info "Checking $PICONFIG_VOL/.pi initialization state"
-if [ ! -d $PICONFIG_VOL/session ]; then
-    if [ -d $HOME/.pi/agent ]; then
-        cp -a $HOME/.pi/agent $PICONFIG_VOL
-        warn ".. pi-config initialization: copied '$HOME/.pi' and linked to '$PICONFIG_VOL/.pi'"
-    else
-        error "** No '$HOME'/.pi.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
-        exit 1
-    fi
-fi
-
-# ---------------------------------------------------------------------------
 # 5.1) Test if $REPO_ROOT/.pi-web/config.json is present. copy it not
 # ---------------------------------------------------------------------------
 info "Checking $PICONFIG_VOL/.pi-web initialization state"
@@ -132,21 +143,6 @@ if [ ! -f $PICONFIG_VOL/.pi-web/config.json ]; then
         warn ".. pi-web initialization: copied '$HOME/.pi-web/config.json' to '$PICONFIG_VOL/.pi-web'"
     else
         error "** No '$HOME'/.pi-web.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
-        exit 1
-    fi
-fi
-
-# ---------------------------------------------------------------------------
-# 3) Test if $PIEXT_VOL/.bun exists; if not copy $HOME/.bun to
-#    $PIEXT_VOL/.bun and warn about pi-extensions initialization
-# ---------------------------------------------------------------------------
-info "Checking $PIEXT_VOL/.bun initialization state"
-if [ ! -d $PIEXT_VOL/.bun ]; then
-    if [ -d $HOME/.bun ]; then
-        cp -a $HOME/.bun $PIEXT_VOL
-        warn ".. pi-extensions initialization: copied '$HOME/.bun' and linked to '$PIEXT_VOL'"
-    else
-        error "** No '$HOME'/.bun.init folder found, cannot initialize $PIEXT_VOL volume. Aborting."
         exit 1
     fi
 fi
