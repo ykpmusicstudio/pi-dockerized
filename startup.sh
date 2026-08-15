@@ -61,10 +61,10 @@ if [ "$ENV_FAILED" -ne 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 1) Test that $PICONFIG_VOL, $PIEXT_VOL and $REPO_VOL exist -> error out if not
+# 1) Test that $PICONFIG_VOL, $PIEXT_VOL and $REPO_ROOT exist -> error out if not
 # ---------------------------------------------------------------------------
 info "Required dirs checks..."
-REQUIRED_DIRS=($PICONFIG_VOL $PIEXT_VOL $REPO_VOL)
+REQUIRED_DIRS=($PICONFIG_VOL $PIEXT_VOL $REPO_ROOT ~/.pi.init ~/.pi-web.init ~/.bun.init)
 MISSING=0
 for dir in "${REQUIRED_DIRS[@]}"; do
     if [ ! -d "$dir" ]; then
@@ -72,25 +72,67 @@ for dir in "${REQUIRED_DIRS[@]}"; do
         MISSING=1
     fi
 done
+info "Required files checks..."
+REQUIRED_FILES=(~/.pi-web.init/config.json)
+for file in "${REQUIRED_FILES[@]}"; do
+    if [ ! -f "$file" ]; then
+        error "Required file '$file' is missing."
+        MISSING=1
+    fi
+done
 if [ "$MISSING" -ne 0 ]; then
-    error "One or more required directories are missing. Aborting."
+    error "One or more required files on directories are missing. Aborting."
     exit 1
 fi
+
+# ---------------------------------------------------------------------------
+# 1.1) Reinit Run asked ?
+# ---------------------------------------------------------------------------
+DO_REINIT=${REINIT_VOL:-}
+if [ -z "$DO_REINIT" ]; then
+  warn "***REINIT_VOL is set*** $PICONFIG_VOL and $PIEXT_VOL will be reinitialized!"
+  rm -rf $PICONFIG_VOL/.pi
+  rm -rf $PIEXT_VOL/.bun
+fi
+
+# ---------------------------------------------------------------------------
+# 5) Test if $REPO_ROOT/.bun and $REPO_ROOT/.pi/agent exist; create them if not
+#    or if a reinit run was asked.
+# ---------------------------------------------------------------------------
+#mkdir -p $REPO_ROOT/.bun
+#mkdir -p $REPO_ROOT/.pi/agent
+#info "Ensured $REPO_ROOT/.bun and $REPO_ROOT/.pi/agent exist."
+#mkdir -p $REPO_ROOT/.pi-web
+#info "Ensured $REPO_ROOT/.pi-web exist."
 
 # ---------------------------------------------------------------------------
 # 2) Test if $PICONFIG_VOL/.pi/agent exists; if not copy $HOME/.pi to
 #    $PICONFIG_VOL/.pi and warn about pi-config initialization
 # ---------------------------------------------------------------------------
-info "Checking pi-config initialization state"
+info "Checking $PICONFIG_VOL/.pi initialization state"
 if [ ! -d $PICONFIG_VOL/.pi/agent ]; then
-    if [ -d $HOME/.pi ]; then
-        cp -a $HOME/.pi $PICONFIG_VOL/.pi
-        mv $HOME/.pi $HOME/.pi.ori
+    if [ -d $HOME/.pi.init ]; then
+        cp -a $HOME/.pi.init $PICONFIG_VOL/.pi
         ln -s $PICONFIG_VOL/.pi $HOME/.pi
         warn "pi-config initialization: copied '$HOME/.pi' and linked to '$PICONFIG_VOL/.pi'"
     else
-        mkdir -p $PICONFIG_VOL/.pi/agent
-        error "No '$HOME'/.pi folder found, creating empty config"
+        error "No '$HOME'/.pi.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# 5.1) Test if $REPO_ROOT/.pi-web/config.json is present. copy it not
+# ---------------------------------------------------------------------------
+info "Checking $PICONFIG_VOL/.pi-web initialization state"
+if [ ! -f $PICONFIG_VOL/.pi-web/config.json ]; then
+    mkdir -p $PICONFIG_VOL/.pi-web
+    if [ -f $HOME/.pi-web.init/config.json ]; then
+        cp $HOME/.pi-web.init/config.json $PICONFIG_VOL/.pi-web/config.json
+        warn "pi-web initialization: copied '$HOME/.pi-web/config.json' to '$PICONFIG_VOL/.pi-web'"
+    else
+        error "No '$HOME'/.pi-web.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
+        exit 1
     fi
 fi
 
@@ -98,15 +140,15 @@ fi
 # 3) Test if $PIEXT_VOL/.bun exists; if not copy $HOME/.bun to
 #    $PIEXT_VOL/.bun and warn about pi-extensions initialization
 # ---------------------------------------------------------------------------
+info "Checking $PIEXT_VOL/.bun initialization state"
 if [ ! -d $PIEXT_VOL/.bun ]; then
-    if [ -d $HOME/.bun ]; then
-        cp -a $HOME/.bun $PIEXT_VOL/.bun
-        mv $HOME/.bun $HOME/.bun.ori
+    if [ -d $HOME/.bun.init ]; then
+        cp -a $HOME/.bun.init $PIEXT_VOL/.bun
         ln -s $PIEXT_VOL/.bun $HOME/.bun
         warn "pi-extensions initialization: copied '$HOME/.bun' and linked to '$PIEXT_VOL/.bun'"
     else
-        mkdir -p $PIEXT_VOL/.bun
-        error "No '$HOME'/.bun folder found, creating empty config"
+        error "No '$HOME'/.bun.init folder found, cannot initialize $PIEXT_VOL volume. Aborting."
+        exit 1
     fi
 fi
 
@@ -123,7 +165,7 @@ add_to_path() {
         PATH="$dir:$PATH"
         export PATH
     else
-        warn "'$dir' is missing; cannot add to PATH."
+        warn "'$dir' is missing; cannot add $dir to PATH."
     fi
 }
 
@@ -131,35 +173,12 @@ add_to_path $HOME/.bun/bin
 add_to_path $HOME/.local/bin
 
 # ---------------------------------------------------------------------------
-# 5) Test if $REPO_VOL/.bun and $REPO_VOL/.pi/agent exist; create them if not
-# ---------------------------------------------------------------------------
-mkdir -p $REPO_VOL/.bun
-mkdir -p $REPO_VOL/.pi/agent
-info "Ensured $REPO_VOL/.bun and $REPO_VOL/.pi/agent exist."
-mkdir -p $REPO_VOL/.pi-web
-info "Ensured $REPO_VOL/.pi-web exist."
-
-# ---------------------------------------------------------------------------
-# 5.1) Test if $REPO_VOL/.pi-web/config.json is present. copy it not
-# ---------------------------------------------------------------------------
-if [ ! -f $PICONFIG_VOL/.pi-web/config.json ]; then
-    mkdir -p $PICONFIG_VOL/.pi-web
-    if [ -f $HOME/config.json ]; then
-        cp $HOME/config.json $PICONFIG_VOL/.pi-web/config.json
-        warn "pi-web initialization: copied '$HOME/.pi-web/config.json' to '$PICONFIG_VOL/.pi-web'"
-    else
-        error "creating empty config.json in $PICONFIG_VOL/.pi-web"
-        touch $PICONFIG_VOL/.pi-web/config.json
-    fi
-fi
-
-# ---------------------------------------------------------------------------
 # 6) If all is ok, start pi-web agent with -p $HTTP_PORT -H $IP_ADDR --no-open
 # ---------------------------------------------------------------------------
 info "All checks passed. Starting pi-web agent..."
+info " --- "
 info "Running as $(whoami)"
-info "bun is $(which bun)"
-info "PATH is $PATH"
+info "bun is $(which bun) / PATH is $PATH"
 info "cd'ing to $REPO_ROOT and launch pi-web"
 cd $REPO_ROOT
-bun --bun run pi-web -H $IP_ADDR -p $HTTP_PORT --no-open
+bun --bun run pi-web -H ${IP_ADDR:-127.0.0.0} -p ${HTTP_PORT:-8080} --no-open

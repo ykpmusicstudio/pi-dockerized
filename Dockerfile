@@ -98,20 +98,30 @@ RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scrip
 # Replace the pi exec with bun statup script
 
 #RUN test -f $HOME/.bun/bin/pi && mv $HOME/.bun/bin/pi $HOME/.bun/bin/pi.ori
-RUN echo "#!/bin/bash\nbunx --bun pi.ori \"\$@\"" > $HOME/.local/bin/pi
-RUN chmod u+x $HOME/.local/bin/pi
+#RUN echo "#!/bin/bash\nbunx --bun pi.ori \"\$@\"" > $HOME/.local/bin/pi
+#RUN chmod u+x $HOME/.local/bin/pi
 # Install pi-web
-RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && npm install -g @agegr/pi-web"
+#RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && npm install -g @agegr/pi-web"
+RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && bun add -g @agegr/pi-web"
 
 # Add $HOME/.local/bin to PATH
 RUN echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
 
 # Add config.json for pi-web
-COPY --chmod=555 --chown=ubuntu:ubuntu config.json $HOME/config.json
+RUN mkdir $HOME/.pi-web.init
+COPY --chmod=555 --chown=ubuntu:ubuntu config.json $HOME/.pi-web.init/config.json
 
 # Add entrypoint script
 COPY --chmod=555 --chown=ubuntu:ubuntu startup.sh $HOME/startup.sh
 #COPY --chmod=755 startup.sh /
+
+# Create simlinks for pi and pi-web in .bun/bin
+RUN cd $HOME/.bun/bin && ln -s ../install/global/node_modules/@earendil-works/pi-coding-agent/dist/cli.js pi
+RUN cd $HOME/.bun/bin && ln -s ../install/global/node_modules/@agegr/pi-web/bin/pi-web.js pi-web
+
+# Now prepare for symlinking .pi and .bun to /pi-config and /pi-extensions volumes
+RUN mv $HOME/.pi $HOME/.pi.init
+RUN mv $HOME/.bun $HOME/.bun.init
 
 # Expose port 8080
 #EXPOSE 8080
