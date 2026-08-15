@@ -6,13 +6,13 @@ services:
     image: localhost/ykpmusicstudio/pi-dockerized:latest
     container_name: mypiagent
     ports:
-      - "8080:8080"
+      - "8893:8893"
 
     tty: true
     stdin_open: true
 
     environment:
-      - HTTP_PORT=44135
+      - HTTP_PORT=8893
       - IP_ADDR=0.0.0.0
       - PI_WEB_CONFIG=/pi-config/.pi-web
       - PI_CODING_AGENT_DIR=/pi-config

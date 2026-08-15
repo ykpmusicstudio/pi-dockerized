@@ -94,7 +94,7 @@ WORKDIR /app
 #RUN bash -c "source $HOME/.nvm/nvm.sh && nvm install 24"
 
 # Install Pi coding agent
-RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scripts @earendil-works/pi-coding-agent"
+RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.1"
 # Replace the pi exec with bun statup script
 
 #RUN test -f $HOME/.bun/bin/pi && mv $HOME/.bun/bin/pi $HOME/.bun/bin/pi.ori

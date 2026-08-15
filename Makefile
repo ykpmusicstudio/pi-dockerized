@@ -17,6 +17,8 @@ USR_FLAG :=
 #USR_FLAG := "--userns=keep-id"
 
 TESTDIR := $(shell pwd)/.tests
+DKR_ENV := -e REPO_ROOT=/app -e PI_WEB_ALLOWED_HOSTS=127.0.0.1 -e PI_CODING_AGENT_DIR=/pi-config -e PI_WEB_CONFIG=/pi-config/.pi-web -e IP_ADDR=0.0.0.0 -e HTTP_PORT=8893
+DKR_VOL := -v $(TESTDIR)/pi-config:/pi-config -v $(TESTDIR)/pi-extensions:/pi-extensions -v $(TESTDIR)/app:/app
 
 # Create local data directory for persistence if using bind mount strategy
 setup:
@@ -45,12 +47,12 @@ run-args: setup
 
 # Access the container shell for debugging
 shell: 
-	UID=$(UID) GID=$(GID) $(DKR_RUN) run -it --rm $(USR_FLAG) -v $(TESTDIR)/pi-config:/pi-config -v $(TESTDIR)/pi-extensions:/pi-extensions -v $(TESTDIR)/app:/app -e REPO_ROOT=/app -e PI_WEB_ALLOWED_HOSTS=127.0.0.1 -e PI_CODING_AGENT_DIR=/pi-config -e PI_WEB_CONFIG=/pi-config/.pi-web --entrypoint /bin/bash $(IMAGE)
+	UID=$(UID) GID=$(GID) $(DKR_RUN) run -it --rm $(USR_FLAG) $(DKR_VOL) $(DKR_ENV) --entrypoint /bin/bash $(IMAGE)
 	# UID=$(UID) GID=$(GID) $(DKR) compose run --entrypoint /bin/bash --rm $(IMAGE)
 
 # Test build
 test: setup
-	UID=$(UID) GID=$(GID) $(DKR_RUN) run -it --rm $(USR_FLAG) -v $(TESTDIR)/pi-config:/pi-config -v $(TESTDIR)/pi-extensions:/pi-extensions -v $(TESTDIR)/app:/app -e REPO_ROOT=/app -e PI_WEB_ALLOWED_HOSTS=127.0.0.1 -e PI_CODING_AGENT_DIR=/pi-config -e PI_WEB_CONFIG=/pi-config/.pi-web $(IMAGE)
+	UID=$(UID) GID=$(GID) $(DKR_RUN) run -it --rm $(USR_FLAG) -p 8893:8893 $(DKR_VOL) $(DKR_ENV) $(IMAGE)
 
 # Clean up stopped containers and networks
 clean:

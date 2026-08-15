@@ -192,6 +192,7 @@ info "All checks passed. Starting pi-web agent..."
 info " --- "
 info "Running as $(whoami)"
 info "bun is $(which bun) / PATH is $PATH"
+info "Port is set to ${HTTP_PORT:-8080} and address is bound to ${IP_ADDR:-127.0.0.1}"
 info "cd'ing to $REPO_ROOT and launch pi-web"
 cd $REPO_ROOT
 bun --bun run pi-web -H ${IP_ADDR:-127.0.0.0} -p ${HTTP_PORT:-8080} --no-open
