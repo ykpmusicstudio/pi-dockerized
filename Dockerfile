@@ -60,9 +60,6 @@ RUN ssh-keyscan -T 5 github.com 2>/dev/null >> $HOME/.ssh/known_hosts || true
 COPY --chown=ubuntu:ubuntu .tmux.conf $HOME/.tmux.conf
 ADD .tmux/ $HOME/.tmux
 
-# configure global .bunfig
-COPY --chown=ubuntu:ubuntu .bunfig.toml $HOME/.bunfig.toml
-
 # Install rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
@@ -106,6 +103,15 @@ RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && bun add -g @ag
 
 # Add $HOME/.local/bin to PATH
 RUN echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
+RUN test -f $HOME/.bun/bin/pi && mv $HOME/.bun/bin/pi $HOME/.bun/bin/pi.npm
+RUN echo "#!/bin/bash\nbunx --bun pi.npm \"\$@\"" > $HOME/.local/bin/pi
+RUN test -f $HOME/.bun/bin/pi-web && mv $HOME/.bun/bin/pi-web $HOME/.bun/bin/pi-web.npm
+RUN echo "#!/bin/bash\nbunx --bun pi-web.npm \"\$@\"" > $HOME/.local/bin/pi-web
+RUN chmod u+x $HOME/.local/bin/pi
+RUN chmod u+x $HOME/.local/bin/pi-web
+
+# Test run pi
+RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && pi install git:github.com/edxeth/pi-tasks || :"
 
 # Add config.json for pi-web
 RUN mkdir $HOME/.pi-web.init
@@ -116,12 +122,16 @@ COPY --chmod=555 --chown=ubuntu:ubuntu startup.sh $HOME/startup.sh
 #COPY --chmod=755 startup.sh /
 
 # Create simlinks for pi and pi-web in .bun/bin
-RUN cd $HOME/.bun/bin && ln -s ../install/global/node_modules/@earendil-works/pi-coding-agent/dist/cli.js pi
-RUN cd $HOME/.bun/bin && ln -s ../install/global/node_modules/@agegr/pi-web/bin/pi-web.js pi-web
+#RUN cd $HOME/.bun/bin && ln -s ../install/global/node_modules/@earendil-works/pi-coding-agent/dist/cli.js pi
+#RUN cd $HOME/.bun/bin && ln -s ../install/global/node_modules/@agegr/pi-web/bin/pi-web.js pi-web
+
+
+# configure global .bunfig
+COPY --chown=ubuntu:ubuntu .bunfig.toml $HOME/.bunfig.toml
 
 # Now prepare for symlinking .pi and .bun to /pi-config and /pi-extensions volumes
-RUN mv $HOME/.pi $HOME/.pi.init
-RUN mv $HOME/.bun $HOME/.bun.init
+#RUN mv $HOME/.pi $HOME/.pi.init
+#RUN mv $HOME/.bun $HOME/.bun.init
 
 # Expose port 8080
 #EXPOSE 8080

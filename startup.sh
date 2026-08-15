@@ -64,7 +64,7 @@ fi
 # 1) Test that $PICONFIG_VOL, $PIEXT_VOL and $REPO_ROOT exist -> error out if not
 # ---------------------------------------------------------------------------
 info "Required dirs checks..."
-REQUIRED_DIRS=($PICONFIG_VOL $PIEXT_VOL $REPO_ROOT ~/.pi.init ~/.pi-web.init ~/.bun.init)
+REQUIRED_DIRS=($PICONFIG_VOL $PIEXT_VOL $REPO_ROOT ~/.pi/agent ~/.pi-web.init ~/.bun)
 MISSING=0
 for dir in "${REQUIRED_DIRS[@]}"; do
     if [ ! -d "$dir" ]; then
@@ -107,13 +107,13 @@ fi
 #info "Ensured $REPO_ROOT/.pi-web exist."
 
 # ---------------------------------------------------------------------------
-# 2) Test if $PICONFIG_VOL/.pi/agent exists; if not copy $HOME/.pi to
-#    $PICONFIG_VOL/.pi and warn about pi-config initialization
+# 2) Test if $PICONFIG_VOL has sessins if not copy $HOME/.pi/agent to
+#    $PICONFIG_VOL and warn about pi-config initialization
 # ---------------------------------------------------------------------------
 info "Checking $PICONFIG_VOL/.pi initialization state"
-if [ ! -d $PICONFIG_VOL/.pi/agent ]; then
-    if [ -d $HOME/.pi.init ]; then
-        cp -a $HOME/.pi.init/agent $PICONFIG_VOL
+if [ ! -d $PICONFIG_VOL/session ]; then
+    if [ -d $HOME/.pi/agent ]; then
+        cp -a $HOME/.pi/agent $PICONFIG_VOL
         warn ".. pi-config initialization: copied '$HOME/.pi' and linked to '$PICONFIG_VOL/.pi'"
     else
         error "** No '$HOME'/.pi.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."
@@ -142,9 +142,9 @@ fi
 # ---------------------------------------------------------------------------
 info "Checking $PIEXT_VOL/.bun initialization state"
 if [ ! -d $PIEXT_VOL/.bun ]; then
-    if [ -d $HOME/.bun.init ]; then
-        cp -a $HOME/.bun.init $PIEXT_VOL/.bun
-        warn ".. pi-extensions initialization: copied '$HOME/.bun' and linked to '$PIEXT_VOL/.bun'"
+    if [ -d $HOME/.bun ]; then
+        cp -a $HOME/.bun $PIEXT_VOL
+        warn ".. pi-extensions initialization: copied '$HOME/.bun' and linked to '$PIEXT_VOL'"
     else
         error "** No '$HOME'/.bun.init folder found, cannot initialize $PIEXT_VOL volume. Aborting."
         exit 1
@@ -157,12 +157,12 @@ fi
 info "Checking $HOME/.bun simlink"
 if [ ! -d "$HOME/.bun" ]; then
     warn ".. adding $HOME/.bun simlink to $PIEXT_VOL/.bun"
-    ln -s $PIEXT_VOL/.bun $HOME/.bun
+    ln -s $PIEXT_VOL $HOME/.bun
 fi
 info "Checking $HOME/.pi simlink"
 if [ ! -d "$HOME/.pi" ]; then
     warn ".. adding $HOME/.pi simlink to $PICONFIG_VOL/.pi"
-    ln -s $PICONFIG_VOL/.pi $HOME/.pi
+    ln -s $PICONFIG_VOL $HOME/.pi/agent
 fi
 
 # ---------------------------------------------------------------------------
@@ -183,6 +183,7 @@ add_to_path() {
 }
 
 add_to_path $HOME/.bun/bin
+add_to_path $PIEXT_VOL/bin
 add_to_path $HOME/.local/bin
 
 # ---------------------------------------------------------------------------
@@ -195,4 +196,5 @@ info "bun is $(which bun) / PATH is $PATH"
 info "Port is set to ${HTTP_PORT:-8080} and address is bound to ${IP_ADDR:-127.0.0.1}"
 info "cd'ing to $REPO_ROOT and launch pi-web"
 cd $REPO_ROOT
-bun --bun run pi-web -H ${IP_ADDR:-127.0.0.0} -p ${HTTP_PORT:-8080} --no-open
+#bun --bun run pi-web -H ${IP_ADDR:-127.0.0.0} -p ${HTTP_PORT:-8080} --no-open
+pi-web -H ${IP_ADDR:-127.0.0.0} -p ${HTTP_PORT:-8080} --no-open
