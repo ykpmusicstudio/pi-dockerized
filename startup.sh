@@ -113,7 +113,7 @@ fi
 info "Checking $PICONFIG_VOL/.pi initialization state"
 if [ ! -d $PICONFIG_VOL/.pi/agent ]; then
     if [ -d $HOME/.pi.init ]; then
-        cp -a $HOME/.pi.init $PICONFIG_VOL/.pi
+        cp -a $HOME/.pi.init/agent $PICONFIG_VOL
         warn ".. pi-config initialization: copied '$HOME/.pi' and linked to '$PICONFIG_VOL/.pi'"
     else
         error "** No '$HOME'/.pi.init folder found, cannot initialize $PICONFIG_VOL volume. Aborting."

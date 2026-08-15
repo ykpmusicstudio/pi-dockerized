@@ -56,5 +56,7 @@ test: setup
 
 # Clean up stopped containers and networks
 clean:
-	$(DKR) compose down
+	$(DKR_COMPOSE) down
+	$(DKR_RUN) buildx prune
+	$(DKR_RUN) image prune
 
