@@ -174,7 +174,7 @@ add_to_path $HOME/.local/bin
 info "Checking .ssh keys in $REPO_ROOT"
 if [ -d $REPO_ROOT/.ssh ]; then
   info "  found .ssh folder, will sync contents"
-  cp -nv $REPO_ROOT/.ssh ~/.ssh
+  cp --update=none -v $REPO_ROOT/.ssh/* ~/.ssh/.
 fi
 
 # ---------------------------------------------------------------------------
