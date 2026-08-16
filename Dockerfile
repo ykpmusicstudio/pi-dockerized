@@ -83,8 +83,6 @@ FROM build1 AS final
 
 USER ubuntu
 
-WORKDIR /app
-
 # Install npm
 #RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 #ENV NVM_DIR=$HOME/.nvm
@@ -92,7 +90,7 @@ WORKDIR /app
 
 # Install Pi coding agent
 COPY --chmod=555 --chown=ubuntu:ubuntu settings.json $HOME/.pi/agent/settings.json
-RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.1"
+RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scripts @earendil-works/pi-coding-agent"
 # Replace the pi exec with bun statup script
 
 #RUN test -f $HOME/.bun/bin/pi && mv $HOME/.bun/bin/pi $HOME/.bun/bin/pi.ori
@@ -135,6 +133,7 @@ COPY --chown=ubuntu:ubuntu .bunfig.toml $HOME/.bunfig.toml
 #RUN mv $HOME/.pi $HOME/.pi.init
 #RUN mv $HOME/.bun $HOME/.bun.init
 
+WORKDIR /app
 # Expose port 8080
 #EXPOSE 8080
 
