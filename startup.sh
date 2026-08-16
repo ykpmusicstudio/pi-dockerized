@@ -86,10 +86,6 @@ if [ "$MISSING" -ne 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 1.1) Reinit Run asked in $PICONFIG_VOL ?
-# ---------------------------------------------------------------------------
-#DO_REINIT=${REINIT_VOL:-}
-# ---------------------------------------------------------------------------
 # 2) Test if $PICONFIG_VOL shall be reinit and warn about pi-config initialization
 # ---------------------------------------------------------------------------
 info "Checking $PICONFIG_VOL/.pi initialization state"
@@ -123,17 +119,7 @@ if [ -f $PIEXT_VOL/.reinit ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 5) Test if $REPO_ROOT/.bun and $REPO_ROOT/.pi/agent exist; create them if not
-#    or if a reinit run was asked.
-# ---------------------------------------------------------------------------
-#mkdir -p $REPO_ROOT/.bun
-#mkdir -p $REPO_ROOT/.pi/agent
-#info "Ensured $REPO_ROOT/.bun and $REPO_ROOT/.pi/agent exist."
-#mkdir -p $REPO_ROOT/.pi-web
-#info "Ensured $REPO_ROOT/.pi-web exist."
-
-# ---------------------------------------------------------------------------
-# 5.1) Test if $REPO_ROOT/.pi-web/config.json is present. copy it not
+# 4) Test if $REPO_ROOT/.pi-web/config.json is present. copy it not
 # ---------------------------------------------------------------------------
 info "Checking $PICONFIG_VOL/.pi-web initialization state"
 if [ ! -f $PICONFIG_VOL/.pi-web/config.json ]; then
@@ -148,7 +134,7 @@ if [ ! -f $PICONFIG_VOL/.pi-web/config.json ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Add symlinks whenever needed
+# 5) Add symlinks whenever needed
 # ---------------------------------------------------------------------------
 info "Checking $HOME/.bun simlink"
 if [ ! -d "$HOME/.bun" ]; then
@@ -162,7 +148,7 @@ if [ ! -d "$HOME/.pi" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 4) Make sure $PIEXT_VOL/.bun/bin and $HOME/.local/bin are present
+# 6) Make sure $PIEXT_VOL/.bun/bin and $HOME/.local/bin are present
 #    or added to PATH
 # ---------------------------------------------------------------------------
 add_to_path() {
@@ -183,7 +169,16 @@ add_to_path $PIEXT_VOL/bin
 add_to_path $HOME/.local/bin
 
 # ---------------------------------------------------------------------------
-# 6) If all is ok, start pi-web agent with -p $HTTP_PORT -H $IP_ADDR --no-open
+# 7) Copy ssh keys from $REPO_ROOT if a .ssh forder exists
+# ---------------------------------------------------------------------------
+info "Checking .ssh keys in $REPO_ROOT"
+if [ -d $REPO_ROOT/.ssh ]; then
+  info "  found .ssh folder, will sync contents"
+  cp -nv $REPO_ROOT/.ssh ~/.ssh
+fi
+
+# ---------------------------------------------------------------------------
+# 8) If all is ok, start pi-web agent with -p $HTTP_PORT -H $IP_ADDR --no-open
 # ---------------------------------------------------------------------------
 info "All checks passed. Starting pi-web agent..."
 info " --- "
