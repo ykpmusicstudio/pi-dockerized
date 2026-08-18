@@ -22,6 +22,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Docker image
         run: |
-          docker build . --tag ghcr.io/${{ github.repository }}:${{github.sha}}
-          docker push ghcr.io/${{ github.repository }}:${{github.sha}}
+          docker build . \
+            --tag ghcr.io/${{ github.repository }}:${{github.sha}} \
+            --tag ghcr.io/${{ github.repository }}:latest
+          docker push --all-tags ghcr.io/${{ github.repository }}
 
