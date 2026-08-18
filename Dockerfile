@@ -77,11 +77,15 @@ RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scrip
 RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && bun add -g @agegr/pi-web@0.8.9"
 
 # Rename the bun-global pi executables and expose them through wrapper scripts
-# that force the bun runtime (bunx --bun).
+# that force the bun runtime (bun x --bun).
+# Note: 'bunx' is a symlink to 'bun' with an absolute path that breaks after
+# the .init → volume copy. Using 'bun x' instead — same semantics, no symlink.
 RUN test -f $HOME/.bun/bin/pi && mv $HOME/.bun/bin/pi $HOME/.bun/bin/pi.npm
-RUN echo "#!/bin/bash\nbunx --bun pi.npm \"\$@\"" > $HOME/.local/bin/pi
+RUN echo '#!/bin/bash
+bun x --bun pi.npm "$@"' > $HOME/.local/bin/pi
 RUN test -f $HOME/.bun/bin/pi-web && mv $HOME/.bun/bin/pi-web $HOME/.bun/bin/pi-web.npm
-RUN echo "#!/bin/bash\nbunx --bun pi-web.npm \"\$@\"" > $HOME/.local/bin/pi-web
+RUN echo '#!/bin/bash
+bun x --bun pi-web.npm "$@"' > $HOME/.local/bin/pi-web
 RUN chmod u+x $HOME/.local/bin/pi
 RUN chmod u+x $HOME/.local/bin/pi-web
 
