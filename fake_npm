@@ -6,7 +6,7 @@ case "$1" in
     root)
         # Handle npm root -g command
         if [[ "$2" == "-g" ]]; then
-            echo "$HOME/.cache/.bun/install/global/node_modules"
+            echo "${BUN_INSTALL:-$HOME/.bun}/install/global/node_modules"
         else
             echo "node_modules"
         fi
