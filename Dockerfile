@@ -8,6 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 USER root
 # Install required system tools
+# NOTE: sudo is intentionally NOT installed. The agent (ubuntu user) must
+# never be able to escalate to root — see doc/insights-and-reco.md.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fd-find \
     ripgrep \
@@ -19,8 +21,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
     openssh-client \
-    sudo \
  && rm -rf /var/lib/apt/lists/*
+
+# Lock the root account: no password, no login, no su/sudo path.
+# The agent runs as 'ubuntu' and must never gain root privileges.
+RUN usermod -L root \
+ && passwd -l root \
+ && usermod -s /usr/sbin/nologin root
 
 # create /app folder for future overlay
 #RUN mkdir /app
