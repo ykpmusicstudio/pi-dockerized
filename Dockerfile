@@ -58,7 +58,6 @@ RUN ssh-keyscan -T 5 github.com 2>/dev/null >> $HOME/.ssh/known_hosts || true
 
 # configure tmux
 COPY --chown=ubuntu:ubuntu .tmux.conf $HOME/.tmux.conf
-ADD .tmux/ $HOME/.tmux
 
 # Install rust (pinned to 1.97.1 with minimal profile)
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.97.1 --profile minimal
