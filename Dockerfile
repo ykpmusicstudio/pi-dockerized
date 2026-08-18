@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS base
+FROM ubuntu:26.04@sha256:678c6550cc43645e08669028bc177f50be4e7c5b8cca677067b1914d4afc7a03 AS base
 #FROM debian:stable-slim AS base
 
 # debian created with root but executed with local user !!
@@ -60,8 +60,8 @@ RUN ssh-keyscan -T 5 github.com 2>/dev/null >> $HOME/.ssh/known_hosts || true
 COPY --chown=ubuntu:ubuntu .tmux.conf $HOME/.tmux.conf
 ADD .tmux/ $HOME/.tmux
 
-# Install rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# Install rust (pinned to 1.97.1 with minimal profile)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.97.1 --profile minimal
 RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 
 # configure local .pi folder
@@ -70,8 +70,11 @@ RUN mkdir -p $HOME/.pi/agent
 RUN mkdir -p $HOME/.bun
 #RUN ln -s /bun-config $HOME/.bun/install
 
-# Install bun
-RUN curl -fsSL https://bun.com/install | bash
+# Install bun (pinned to v1.3.14)
+RUN curl -fsSL https://bun.sh/install | bash -s -- bun-v1.3.14
+# Verify bun binary integrity (x86_64 AVX2 build hash)
+RUN sha256sum $HOME/.bun/bin/bun | grep -q 9fd36f87e4b90b07632b987a2e4ec81ca15a62c81bf983190cea6d715be2ad74 || \
+  { echo "WARNING: bun checksum mismatch (may be baseline/arch variant, verify expected hash)"; }
 
 # configure fake npm as an alias to bun
 RUN mkdir -p ~/.local/bin
@@ -90,7 +93,7 @@ USER ubuntu
 
 # Install Pi coding agent
 COPY --chmod=555 --chown=ubuntu:ubuntu settings.json $HOME/.pi/agent/settings.json
-RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scripts @earendil-works/pi-coding-agent"
+RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.2"
 # Replace the pi exec with bun statup script
 
 #RUN test -f $HOME/.bun/bin/pi && mv $HOME/.bun/bin/pi $HOME/.bun/bin/pi.ori
@@ -98,7 +101,7 @@ RUN bash -c "export PATH=$PATH:$HOME:$HOME/.bun/bin && bun add -g --ignore-scrip
 #RUN chmod u+x $HOME/.local/bin/pi
 # Install pi-web
 #RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && npm install -g @agegr/pi-web"
-RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && bun add -g @agegr/pi-web"
+RUN bash -c "export PATH=$PATH:$HOME/.local/bin:$HOME/.bun/bin && bun add -g @agegr/pi-web@0.8.9"
 
 # Add $HOME/.local/bin to PATH
 RUN echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
