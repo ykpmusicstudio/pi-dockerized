@@ -11,7 +11,8 @@
 # - starts pi-web agent with -p $HTTP_PORT -H $IP_ADDR --no-open
 #
 # The runtime uses BUN_INSTALL and PI_CODING_AGENT_DIR env vars (set via
-# Dockerfile ENV); no symlinks are used.
+# Dockerfile ENV) alongside an unconditional ~/.bun symlink to the
+# /pi-extensions volume for bun's runtime injection to work.
 set -euo pipefail
 
 source $HOME/.bashrc
@@ -145,7 +146,18 @@ if [ ! -f $PICONFIG_VOL/.pi-web/config.json ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 5) Ensure required tooling is on PATH (safety net — ENV /.bashrc already set)
+# 5) Unconditional symlink: ~/.bun → /pi-extensions
+#     Bun requires ~/.bun to exist (as a symlink to its install directory) for
+#     its runtime injection to work in 'bun x' (or 'bunx') when the target
+#     script has a #!/usr/bin/env node shebang. Without it, bun defers to the
+#     system node interpreter which isn't installed in this container.
+# ---------------------------------------------------------------------------
+info "Creating ~/.bun symlink to $PIEXT_VOL"
+rm -rf $HOME/.bun
+ln -sfn $PIEXT_VOL $HOME/.bun
+
+# ---------------------------------------------------------------------------
+# 6) Ensure required tooling is on PATH (safety net — ENV /.bashrc already set)
 # ---------------------------------------------------------------------------
 add_to_path() {
     local dir="$1"
@@ -163,7 +175,7 @@ add_to_path $HOME/.cargo/bin
 add_to_path $HOME/.local/bin
 
 # ---------------------------------------------------------------------------
-# 6) Copy ssh keys from $REPO_ROOT if a .ssh folder exists
+# 7) Copy ssh keys from $REPO_ROOT if a .ssh folder exists
 # ---------------------------------------------------------------------------
 info "Checking .ssh keys in $REPO_ROOT"
 if [ -d $REPO_ROOT/.ssh ]; then
@@ -172,7 +184,7 @@ if [ -d $REPO_ROOT/.ssh ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 7) Start pi-web agent
+# 8) Start pi-web agent
 # ---------------------------------------------------------------------------
 info "All checks passed. Starting pi-web agent..."
 info " --- "
