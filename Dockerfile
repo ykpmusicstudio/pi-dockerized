@@ -16,6 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
     openssh-client \
+    python3 \
+    python3-pip \
  && rm -rf /var/lib/apt/lists/*
 
 # Lock the root account: no password, no login, no su/sudo path.
@@ -61,6 +63,13 @@ RUN curl -fsSL https://bun.sh/install | bash -s -- bun-v1.3.14
 # Verify bun binary integrity (x86_64 AVX2 build hash)
 RUN sha256sum $HOME/.bun/bin/bun | grep -q 9fd36f87e4b90b07632b987a2e4ec81ca15a62c81bf983190cea6d715be2ad74 || \
   { echo "WARNING: bun checksum mismatch (may be baseline/arch variant, verify expected hash)"; }
+
+# Install uv (Python package manager)
+# uv is a Rust binary. The installer places it in $CARGO_HOME/bin
+# (~/.cargo/bin) when cargo is present, else ~/.local/bin — both are on PATH.
+RUN curl -fsSL https://astral.sh/uv/install.sh | sh -s -- --no-modify-path
+# Verify uv is installed and on PATH
+RUN bash -c "export PATH=$HOME/.cargo/bin:$HOME/.local/bin:$PATH && uv --version"
 
 # configure fake npm as an alias to bun
 RUN mkdir -p ~/.local/bin
